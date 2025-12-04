@@ -355,7 +355,9 @@ const Footer = () => {
 function App() {
   const [currentView, setCurrentView] = useState('landing');
   const [isDarkMode, setIsDarkMode] = useState(true);
-  const [authToken, setAuthToken] = useState(null);
+  const [authToken, setAuthToken] = useState(
+    () => localStorage.getItem("chemic_auth_token")
+  );
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -372,6 +374,20 @@ function App() {
   const [history, setHistory] = useState([
   ]);
   const [outputData, setOutputData] = useState(null);
+
+  useEffect(() => {
+    const savedToken = localStorage.getItem('chemic_auth_token');
+    if (savedToken && currentView === 'landing') {
+      setAuthToken(savedToken);
+      setCurrentView('dashboard');
+    }
+  }, []);
+
+  useEffect(() => {
+    if (authToken) {
+      localStorage.setItem('chemic_auth_token', authToken);
+    }
+  }, [authToken]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;

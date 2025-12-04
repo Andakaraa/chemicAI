@@ -77,6 +77,7 @@ export const LoginPage = ({ onLoginSuccess, onRegisterClick, onBack, isDarkMode,
       if (!response.ok) throw new Error('Login gagal. Email atau password salah.');
       const data = await response.json();
       onSetToken(data.access_token);
+      localStorage.setItem("chemic_auth_token", data.access_token);
       onLoginSuccess();
     } catch (err) {
       setError(err.message || 'Terjadi kesalahan saat login');
