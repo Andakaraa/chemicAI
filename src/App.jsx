@@ -550,6 +550,19 @@ function App() {
                 });
                 if (!res.ok) throw new Error('Failed to fetch generation details');
                 const d = await res.json();
+
+                setFormData(prev => ({
+                  ...prev,
+                  smiles: d.smi_string || d.meta?.ori_smiles || prev.smiles,
+                  numMolecules: d.num_molecules || prev.numMolecules,
+                  algorithm: d.algorithm || d.meta?.algorithm || prev.algorithm,
+                  property: d.property_to_optimize || prev.property,
+                  maximize: !(d.minimize ?? !prev.maximize),
+                  similarity: d.min_similarity ?? prev.similarity,
+                  particles: d.particles ?? prev.particles,
+                  iterations: d.iterations ?? prev.iterations,
+                }));
+
                 const processed = { ...d, timestamp: new Date().toLocaleString('en-GB') };
                 setOutputData(processed);
               } catch (e) {
