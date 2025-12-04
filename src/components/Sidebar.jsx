@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { XIcon } from './Icons';
 
 async function fetchPubChemName(smiles) {
@@ -19,59 +19,10 @@ async function fetchPubChemName(smiles) {
 }
 
 export const Sidebar = ({ isOpen, onClose, history: initialHistory = [], authToken, apiBaseUrl, onSelect }) => {
-  const [history, setHistory] = useState(initialHistory || []);
+  const history = initialHistory || [];
   const [loading, setLoading] = useState(false);
   const nameCacheRef = useRef({});
 
-  useEffect(() => {
-    if (!isOpen) return;
-    const fetchHistory = async () => {
-      setLoading(true);
-      try {
-        const res = await fetch(`${apiBaseUrl || ''}/api/chem/history`, {
-          headers: {
-            'Content-Type': 'application/json',
-            ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
-          },
-        });
-        if (!res.ok) throw new Error('Failed to fetch history');
-        const data = await res.json();
-        setHistory(data || []);
-
-        try {
-          const cache = nameCacheRef.current;
-          (data || []).forEach((item, idx) => {
-            const smiles = item?.meta?.ori_smiles || item?.smi_string || item?.smiles;
-            const itemId = item?.id || item?.generation_id;
-            if (!smiles || !itemId) return;
-            
-            if (cache[smiles]) {
-              setHistory(prev => 
-                prev.map((h, i) => (h.id === itemId || h.generation_id === itemId) ? { ...h, displayName: cache[smiles] } : h)
-              );
-              return;
-            }
-            
-            fetchPubChemName(smiles).then((name) => {
-              if (name) {
-                cache[smiles] = name;
-                setHistory(prev => 
-                  prev.map((h, i) => (h.id === itemId || h.generation_id === itemId) ? { ...h, displayName: name } : h)
-                );
-              }
-            }).catch(() => {});
-          });
-        } catch (e) {
-          console.warn('Name resolution error:', e);
-        }
-      } catch (e) {
-        console.error('History fetch error', e);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchHistory();
-  }, [isOpen, apiBaseUrl, authToken]);
 
   const handleSelect = async (item) => {
     if (onSelect && item && (item.id || item.generation_id)) {

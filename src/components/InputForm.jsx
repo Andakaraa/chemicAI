@@ -76,7 +76,17 @@ export const InputForm = ({ formData, onInputChange, onReset, setFormData, authT
       };
 
       if (onSetOutput) onSetOutput(processed);
-      if (onAddHistory) onAddHistory(formData.smiles);
+      if (onAddHistory) {
+        onAddHistory({
+          smiles: formData.smiles,
+          property: formData.property,
+          algorithm: formData.algorithm,
+          timestamp: new Date().toISOString()
+        });
+      }
+      if (typeof fetchHistory === "function") {
+        fetchHistory();
+      }
       return processed;
     } catch (e) {
       console.error(e);

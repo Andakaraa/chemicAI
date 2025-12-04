@@ -374,6 +374,22 @@ function App() {
   const [history, setHistory] = useState([
   ]);
   const [outputData, setOutputData] = useState(null);
+  const fetchHistory = async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/chem/history`, {
+        headers: {
+          'Content-Type': 'application/json',
+          ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
+        },
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+      setHistory(data || []);
+    } catch (e) {
+      console.error('History fetch error:', e);
+    }
+  };
+
 
   useEffect(() => {
     const savedToken = localStorage.getItem('chemic_auth_token');
@@ -386,63 +402,13 @@ function App() {
   useEffect(() => {
     if (authToken) {
       localStorage.setItem('chemic_auth_token', authToken);
+      fetchHistory();
     }
   }, [authToken]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleRun = async () => {
-    setIsLoading(true);
-    try {
-      const payload = {
-        smi_string: formData.smiles,
-        num_molecules: parseInt(formData.numMolecules, 10),
-        algorithm: formData.algorithm,
-        property_to_optimize: formData.property,
-        min_similarity: parseFloat(formData.similarity),
-        particles: parseInt(formData.particles, 10),
-        iterations: parseInt(formData.iterations, 10),
-        minimize: !formData.maximize,
-      };
-
-      const response = await fetch(`${API_BASE_URL}/api/chem/generate`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${authToken}`,
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (!response.ok) {
-        const errData = await response.json();
-        throw new Error(errData.detail || 'Gagal generate molecules');
-      }
-
-      const data = await response.json();
-      
-      const newEntry = `${formData.example} - ${formData.property} Optimization`;
-      setHistory(prev => [newEntry, ...prev]);
-      
-      const processedData = {
-        ...formData,
-        ...data,
-        timestamp: new Date().toLocaleString('en-GB', { 
-            day: 'numeric', month: 'numeric', year: 'numeric', 
-            hour: '2-digit', minute: '2-digit', second: '2-digit' 
-        })
-      };
-      
-      setOutputData(processedData);
-    } catch (error) {
-      console.error('Error running generation:', error);
-      alert('Gagal generate molecules: ' + error.message);
-    } finally {
-      setIsLoading(false);
-    }
   };
 
   const handleReset = () => {
@@ -586,6 +552,7 @@ function App() {
                 onSetOutput={(data) => setOutputData(data)}
                 onAddHistory={(entry) => setHistory(prev => [entry, ...prev])}
                 setIsLoading={setIsLoading}
+                fetchHistory={fetchHistory}
               />
               <OutputSection outputData={outputData} isLoading={isLoading} />
             </div>
