@@ -384,7 +384,29 @@ function App() {
       });
       if (!res.ok) return;
       const data = await res.json();
-      setHistory(data || []);
+
+      const normalized = data.map(item => ({
+        ...item,
+        generation_id:
+          item.generation_id ??
+          item.id ??
+          item.meta?.generation_id ??
+          null,
+
+        property:
+          item.property ??
+          item.property_to_optimize ??
+          item.meta?.property ??
+          null,
+
+        timestamp:
+          item.timestamp ??
+          item.created_at ??
+          item.time ??
+          null,
+      }));
+
+      setHistory(normalized || []);
     } catch (e) {
       console.error('History fetch error:', e);
     }
@@ -564,9 +586,7 @@ function App() {
     default:
       content = null;
   }
-  useEffect(() => {
-  console.log("Run History:", history);
-}, [history]);
+
   return (
     <>
       {content}

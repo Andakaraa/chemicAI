@@ -78,7 +78,7 @@ export const InputForm = ({ formData, onInputChange, onReset, setFormData, authT
       if (onSetOutput) onSetOutput(processed);
       if (onAddHistory) {
         onAddHistory({
-          generation_id: data.generation_id,
+          generation_id: data.generation_id ?? data.id ?? null,
           smiles: formData.smiles,
           pubchem_name: data.pubchem_name || null,
           algorithm: formData.algorithm,
