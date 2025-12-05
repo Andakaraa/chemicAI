@@ -42,11 +42,13 @@ export const Sidebar = ({ isOpen, onClose, history = [], onSelect }) => {
   }, [history]);
 
   const handleSelect = (item) => {
-    if (onSelect && item && (item.id || item.generation_id)) {
-      const id = item.id || item.generation_id;
-      onSelect(id);
-      onClose && onClose();
+    const id = item.generation_id ?? item.id ?? item.generationId ?? null;
+     if (!id) {
+      console.warn("⚠ History item tidak memiliki ID:", item);
+      return;
     }
+    onSelect(id);
+    onClose && onClose();
   };
 
   return (
@@ -144,5 +146,5 @@ export const Sidebar = ({ isOpen, onClose, history = [], onSelect }) => {
     </>
   );
 };
-console.log("History Item:", item);
+
 export default Sidebar;
