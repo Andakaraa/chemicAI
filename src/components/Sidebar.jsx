@@ -144,5 +144,5 @@ export const Sidebar = ({ isOpen, onClose, history = [], onSelect }) => {
     </>
   );
 };
-
+console.log("History Item:", item);
 export default Sidebar;
