@@ -564,7 +564,9 @@ function App() {
     default:
       content = null;
   }
-
+  useEffect(() => {
+  console.log("Run History:", history);
+}, [history]);
   return (
     <>
       {content}
