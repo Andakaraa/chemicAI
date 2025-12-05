@@ -49,16 +49,28 @@ export const Sidebar = ({ isOpen, onClose, history: initialHistory = [], authTok
             <p className="text-gray-500 text-sm italic">No history yet.</p>
           ) : (
             <ul className="space-y-3">
-              {history.map((item, index) => (
-                <li 
-                  key={item.id || item.generation_id || index} 
-                  onClick={() => handleSelect(item)} 
-                  className="text-sm text-gray-300 bg-[#1E1E1E] p-3 rounded border border-gray-800 hover:border-gray-600 cursor-pointer transition break-words"
-                  title={item.displayName || item.meta?.ori_smiles || item.smi_string || ''}
-                >
-                  {item.displayName || item.meta?.ori_smiles || item.smi_string || `History ${index + 1}`}
-                </li>
-              ))}
+                {history.map((item, index) => {
+                  const smiles = item.smiles || item.smi_string || item.meta?.ori_smiles;
+                  const cached = nameCacheRef.current[smiles];
+
+                  if (!cached) {
+                    fetchPubChemName(smiles).then(name => {
+                      nameCacheRef.current[smiles] = name || smiles;
+                      item.displayName = name || smiles; 
+                    });
+                  }
+
+                  return (
+                    <li 
+                      key={item.id || item.generation_id || index}
+                      onClick={() => handleSelect(item)}
+                      className="text-sm text-gray-300 bg-[#1E1E1E] p-3 rounded border border-gray-800 hover:border-gray-600 cursor-pointer transition break-words"
+                      title={smiles}
+                    >
+                      {cached || item.displayName || smiles || `History ${index + 1}`}
+                    </li>
+                  );
+              })}
             </ul>
           )}
         </div>
