@@ -1,20 +1,37 @@
 import React, { useState, useRef } from 'react';
 import { XIcon } from './Icons';
 
-async function fetchPubChemName(smiles) {
+async function fetchPubChemName(smiles, retries = 3) {
   if (!smiles) return null;
-  try {
-    const encoded = encodeURIComponent(smiles);
-    const url = `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/smiles/${encoded}/synonyms/JSON`;
-    const res = await fetch(url);
-    if (!res.ok) return null;
-    const j = await res.json();
-    const syn = j?.InformationList?.Information?.[0]?.Synonym;
-    if (Array.isArray(syn) && syn.length > 0) {
-      const prefer = syn.find(s => s && !/inchi|inchikey|iupac|smiles|cas/i.test(s));
-      return prefer || syn[0];
+
+  const encoded = encodeURIComponent(smiles);
+  const url = `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/smiles/${encoded}/synonyms/JSON`;
+
+  for (let i = 0; i < retries; i++) {
+    try {
+      const res = await fetch(url);
+
+      if (res.status === 503 || res.status === 500) {
+        await new Promise(r => setTimeout(r, 400 * (i + 1)));
+        continue;
+      }
+
+      if (!res.ok) return null;
+
+      const j = await res.json();
+      const syn = j?.InformationList?.Information?.[0]?.Synonym;
+
+      if (Array.isArray(syn) && syn.length > 0) {
+        const prefer = syn.find(s => s && !/inchi|inchikey|iupac|smiles|cas/i.test(s));
+        return prefer || syn[0];
+      }
+
+      return null;
+
+    } catch (e) {
+      await new Promise(r => setTimeout(r, 400 * (i + 1)));
     }
-  } catch (e) {}
+  }
   return null;
 }
 
