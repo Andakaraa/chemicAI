@@ -78,9 +78,15 @@ export const InputForm = ({ formData, onInputChange, onReset, setFormData, authT
       if (onSetOutput) onSetOutput(processed);
       if (onAddHistory) {
         onAddHistory({
+          generation_id: data.generation_id,
           smiles: formData.smiles,
-          property: formData.property,
+          pubchem_name: data.pubchem_name || null,
           algorithm: formData.algorithm,
+          property: formData.property,
+          num_molecules: formData.numMolecules,
+          similarity: formData.similarity,
+          particles: formData.particles,
+          iterations: formData.iterations,
           timestamp: new Date().toISOString()
         });
       }
